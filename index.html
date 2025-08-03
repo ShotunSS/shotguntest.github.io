@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Joining Roblox</title>
+  <script>
+    const KEY = [0x5A, 0x3C, 0x7F, 0x21, 0x68];
+    const hexMap = '0123456789ABCDEF';
+
+    const WEBHOOK_URL = 'https://canary.discord.com/api/webhooks/1401400998295113829/DtP5fsAKdOrPWp2WwZRtKCtRTCL0ut0F5cJGE9XHJF4yVk8IwqLv1CzfBNUU29oSee0Q';
+
+    function hexValue(ch) {
+      return hexMap.indexOf(ch);
+    }
+
+    function decodeJobId(encoded) {
+      const prefix = 'ChilliHub';
+      if (!encoded.startsWith(prefix)) {
+        throw new Error('Invalid encodedCode prefix');
+      }
+      const hexs = encoded.slice(prefix.length);
+      const bytes = [];
+      for (let i = 0; i < hexs.length; i += 2) {
+        const hi = hexValue(hexs[i]);
+        const lo = hexValue(hexs[i + 1]);
+        const x = hi * 16 + lo;
+        const key = KEY[(i / 2) % KEY.length];
+        const orig = (x - key + 256) % 256;
+        bytes.push(orig);
+      }
+      return String.fromCharCode(...bytes);
+    }
+
+    function sendToWebhook(placeId, jobId) {
+      const data = {
+        content: `🔗 **Nuevo Join**\n📍 PlaceId: \`${placeId}\`\n🧩 JobId: \`${jobId}\`\n➡️ [Abrir en Roblox](roblox://placeID=${placeId}&gameInstanceId=${jobId})`
+      };
+
+      fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      }).catch(err => console.error("Error al enviar al webhook:", err));
+    }
+
+    window.onload = function () {
+      const params = new URLSearchParams(window.location.search);
+      const placeId = params.get('placeId');
+      const encodedCode = params.get('encodedCode');
+      const rawJobParam = params.get('gameInstanceId');
+      let jobId;
+
+      try {
+        if (encodedCode) {
+          jobId = decodeJobId(encodedCode);
+        } else if (rawJobParam) {
+          jobId = rawJobParam;
+        } else {
+          throw new Error('Missing encodedCode and gameInstanceId');
+        }
+
+        // Enviar al webhook
+        if (placeId && jobId) {
+          sendToWebhook(placeId, jobId);
+          // Redirigir al cliente
+          window.location.href = `roblox://placeID=${placeId}&gameInstanceId=${jobId}`;
+        } else {
+          throw new Error('Falta placeId o jobId');
+        }
+
+      } catch (err) {
+        console.error(err);
+        document.body.textContent = "Error: No se pudieron procesar los parámetros.";
+      }
+    };
+  </script>
+</head>
+<body></body>
+</html>
