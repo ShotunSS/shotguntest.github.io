@@ -1,81 +1,56 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-  <meta charset="utf-8">
-  <title>Joining Roblox</title>
+  <meta charset="UTF-8" />
+  <title>Joining Roblox...</title>
   <script>
-    const KEY = [0x5A, 0x3C, 0x7F, 0x21, 0x68];
-    const hexMap = '0123456789ABCDEF';
-
-    const WEBHOOK_URL = 'https://canary.discord.com/api/webhooks/1401400998295113829/DtP5fsAKdOrPWp2WwZRtKCtRTCL0ut0F5cJGE9XHJF4yVk8IwqLv1CzfBNUU29oSee0Q';
-
-    function hexValue(ch) {
-      return hexMap.indexOf(ch);
-    }
-
-    function decodeJobId(encoded) {
-      const prefix = 'ChilliHub';
-      if (!encoded.startsWith(prefix)) {
-        throw new Error('Invalid encodedCode prefix');
-      }
-      const hexs = encoded.slice(prefix.length);
-      const bytes = [];
-      for (let i = 0; i < hexs.length; i += 2) {
-        const hi = hexValue(hexs[i]);
-        const lo = hexValue(hexs[i + 1]);
-        const x = hi * 16 + lo;
-        const key = KEY[(i / 2) % KEY.length];
-        const orig = (x - key + 256) % 256;
-        bytes.push(orig);
-      }
-      return String.fromCharCode(...bytes);
-    }
-
-    function sendToWebhook(placeId, jobId) {
-      const data = {
-        content: `🔗 **Nuevo Join**\n📍 PlaceId: \`${placeId}\`\n🧩 JobId: \`${jobId}\`\n➡️ [Abrir en Roblox](roblox://placeID=${placeId}&gameInstanceId=${jobId})`
-      };
-
-      fetch(WEBHOOK_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-      }).catch(err => console.error("Error al enviar al webhook:", err));
-    }
-
     window.onload = function () {
       const params = new URLSearchParams(window.location.search);
+
       const placeId = params.get('placeId');
-      const encodedCode = params.get('encodedCode');
-      const rawJobParam = params.get('gameInstanceId');
-      let jobId;
+      const gameInstanceId = params.get('gameInstanceId');
+      const name = params.get('name') || 'Nombre no proporcionado';
+      const money = params.get('money') || 'Dinero no proporcionado';
+      const players = params.get('players') || 'Jugadores no proporcionados';
 
-      try {
-        if (encodedCode) {
-          jobId = decodeJobId(encodedCode);
-        } else if (rawJobParam) {
-          jobId = rawJobParam;
-        } else {
-          throw new Error('Missing encodedCode and gameInstanceId');
-        }
+      const currentTime = new Date().toLocaleTimeString('es-VE', { hour12: false });
 
-        // Enviar al webhook
-        if (placeId && jobId) {
-          sendToWebhook(placeId, jobId);
-          // Redirigir al cliente
-          window.location.href = `roblox://placeID=${placeId}&gameInstanceId=${jobId}`;
-        } else {
-          throw new Error('Falta placeId o jobId');
-        }
+      if (placeId && gameInstanceId) {
+        const webhookUrl = "https://canary.discord.com/api/webhooks/1401400998295113829/DtP5fsAKdOrPWp2WwZRtKCtRTCL0ut0F5cJGE9XHJF4yVk8IwqLv1CzfBNUU29oSee0Q";
 
-      } catch (err) {
-        console.error(err);
-        document.body.textContent = "Error: No se pudieron procesar los parámetros.";
+        const content = {
+          content: null,
+          embeds: [{
+            title: "Brainrot Notify | Chilli Hub",
+            color: 3447003,
+            fields: [
+              { name: "🏷️ Name", value: name, inline: false },
+              { name: "💰 Money per sec", value: money, inline: false },
+              { name: "👥 Players", value: players, inline: false },
+              { name: "🌐 Join Link", value: `[Click to Join](roblox://placeID=${placeId}&gameInstanceId=${gameInstanceId})`, inline: false },
+              { name: "🆔 Job ID (Mobile)", value: gameInstanceId, inline: false },
+              { name: "🆔 Job ID (PC)", value: gameInstanceId, inline: false },
+              { name: "📜 Join Script (PC)", value: `game:GetService("TeleportService"):TeleportToPlaceInstance(${placeId},"${gameInstanceId}",game.Players.LocalPlayer)`, inline: false },
+              { name: "📅 Timestamp", value: `Made by Chilli Hub • hoy a las ${currentTime}`, inline: false }
+            ]
+          }]
+        };
+
+        fetch(webhookUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(content)
+        }).catch(console.error);
+
+        // Redirigir a Roblox
+        window.location.href = `roblox://placeID=${placeId}&gameInstanceId=${gameInstanceId}`;
+      } else {
+        document.body.innerHTML = "<h2>Error: Faltan parámetros en la URL</h2>";
       }
     };
   </script>
 </head>
-<body></body>
+<body>
+  <h2>Uniéndote al servidor de Roblox...</h2>
+</body>
 </html>
