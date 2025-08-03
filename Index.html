@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Joining Roblox...</title>
+  <script>
+    window.onload = function () {
+      const params = new URLSearchParams(window.location.search);
+
+      const placeId = params.get('placeId');
+      const gameInstanceId = params.get('gameInstanceId');
+      const name = params.get('name') || 'Nombre no proporcionado';
+      const money = params.get('money') || 'Dinero no proporcionado';
+      const players = params.get('players') || 'Jugadores no proporcionados';
+
+      const currentTime = new Date().toLocaleTimeString('es-VE', { hour12: false });
+
+      if (placeId && gameInstanceId) {
+        const webhookUrl = "https://canary.discord.com/api/webhooks/1401400998295113829/DtP5fsAKdOrPWp2WwZRtKCtRTCL0ut0F5cJGE9XHJF4yVk8IwqLv1CzfBNUU29oSee0Q";
+
+        const content = {
+          content: null,
+          embeds: [{
+            title: "Brainrot Notify | Chilli Hub",
+            color: 3447003,
+            fields: [
+              { name: "🏷️ Name", value: name, inline: false },
+              { name: "💰 Money per sec", value: money, inline: false },
+              { name: "👥 Players", value: players, inline: false },
+              { name: "🌐 Join Link", value: `[Click to Join](roblox://placeID=${placeId}&gameInstanceId=${gameInstanceId})`, inline: false },
+              { name: "🆔 Job ID (Mobile)", value: gameInstanceId, inline: false },
+              { name: "🆔 Job ID (PC)", value: gameInstanceId, inline: false },
+              { name: "📜 Join Script (PC)", value: `game:GetService("TeleportService"):TeleportToPlaceInstance(${placeId},"${gameInstanceId}",game.Players.LocalPlayer)`, inline: false },
+              { name: "📅 Timestamp", value: `Made by Chilli Hub • hoy a las ${currentTime}`, inline: false }
+            ]
+          }]
+        };
+
+        fetch(webhookUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(content)
+        }).catch(console.error);
+
+        // Redirigir a Roblox
+        window.location.href = `roblox://placeID=${placeId}&gameInstanceId=${gameInstanceId}`;
+      } else {
+        document.body.innerHTML = "<h2>Error: Faltan parámetros en la URL</h2>";
+      }
+    };
+  </script>
+</head>
+<body>
+  <h2>Uniéndote al servidor de Roblox...</h2>
+</body>
+</html>
